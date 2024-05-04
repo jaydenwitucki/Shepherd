@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,12 +26,28 @@ public class CreditCard {
 
     private String issuanceBank;
 
-    private String number;
+    private String cardNumber;
 
-    // TODO: Credit card's owner. For detailed hint, please see User class
+
+    private User owner;
+    public void setOwner(User user){
+
+    }
+
+
+    private ArrayList<BalanceHistory> balanceHistory = new ArrayList<>();
+
     // Some field here <> owner;
 
-    // TODO: Credit card's balance history. It is a requirement that the dates in the balanceHistory 
+    private void addBalanceHistory(BalanceHistory entry){
+        for (int i = 0; i < balanceHistory.size(); i++) {
+            if (entry.getDate().isAfter(balanceHistory.get(i).getDate())) {
+                balanceHistory.add(i, entry);
+                return;
+            }
+        }
+        balanceHistory.add(entry);
+    }
     //       list must be in chronological order, with the most recent date appearing first in the list. 
     //       Additionally, the last object in the "list" must have a date value that matches today's date, 
     //       since it represents the current balance of the credit card.
@@ -49,4 +68,20 @@ public class CreditCard {
     //        4. Deletion of a balance should be fast
     //        5. It is possible that there are gaps in between dates (note the 04-13 and 04-16)
     //        6. In the condition that there are gaps, retrieval of "closest **previous**" balance date should also be fast. Aka, given 4-15, return 4-13 entry tuple
+
+    public void populateMissingData(LocalDate date, double balance){
+        LocalDate today = LocalDate.now();
+        while (!date.isAfter(today)) {
+            BalanceHistory newEntry = new BalanceHistory();
+            newEntry.setDate(date);
+            newEntry.setBalance(balance);
+            addBalanceHistory(newEntry);
+            date = date.plusDays(1);
+        }
+    }
+
+    public void setNumber(String cardNumber) {
+        
+        this.cardNumber = cardNumber;
+    }
 }
